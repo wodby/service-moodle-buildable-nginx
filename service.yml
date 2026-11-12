@@ -1,0 +1,41 @@
+name: moodle-buildable-nginx
+type: service
+icon: moodle
+title: Nginx (buildable Moodle)
+from: php-nginx
+fromVersionConstraint: "^2.0.0"
+fromVersion: "2.2.3"
+guidance: GUIDANCE.md
+
+labels:
+- moodle
+
+links:
+- name: backend
+  title: Moodle
+  selectors:
+  - type: service
+    labels:
+    - moodle
+
+build:
+  link: backend
+  # Moodle keeps everything served over the web in public/. Only that
+  # directory goes into this image, at the same path as in the PHP image.
+  copySubdir: "{{settings.docroot}}"
+
+# Moodle's rules, the same as in the prebuilt Moodle Nginx image. They replace
+# the image's PHP preset, whose name makes the image define the PHP-FPM
+# upstream.
+configs:
+- name: preset
+  title: Moodle preset
+  filepath: /etc/gotpl/presets/php.conf.tmpl
+  config: preset.conf.tmpl
+
+env:
+# Matches the upload limit of the Moodle service.
+- name: NGINX_CLIENT_MAX_BODY_SIZE
+  value: 256m
+
+workspace: false
